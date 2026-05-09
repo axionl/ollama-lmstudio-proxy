@@ -1,0 +1,43 @@
+name: Rust Build (x86_64-pc-windows-gnu)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      # 确保使用 MinGW 工具链的 GCC 而非 MSVC
+      RUSTFLAGS: "-C linker=x86_64-w64-mingw32-gcc"
+      # 避免路径问题（Windows 路径分隔符）
+      CARGO_TARGET_DIR: ./target
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MinGW environment
+        run: |
+          # 添加 MinGW 到 PATH（GitHub Actions Windows 运行器预装了 MSYS2）
+          echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # 验证工具链
+          x86_64-w64-mingw32-gcc --version
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup target add x86_64-pc-windows-gnu
+
+      - name: Build for x86_64-pc-windows-gnu
+        run: cargo build --target x86_64-pc-windows-gnu --release
+
+      - name: Verify build output
+        run: |
+          # 检查生成的 Windows 可执行文件
+          file ./target/x86_64-pc-windows-gnu/release/*.exe
+          # 列出关键文件
+          ls -l ./target/x86_64-pc-windows-gnu/release/*.exe
