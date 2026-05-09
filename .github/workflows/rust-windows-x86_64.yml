@@ -44,8 +44,8 @@ jobs:
           # 重命名文件为带版本号的格式（可选但推荐）
           $exeName = (Get-ChildItem artifacts/*.exe).Name
           $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
-          $newName = "myapp-windows-$version.exe"
-          
+          $newName = "ollama-lmstudio-proxy-$version.exe"
+          lm studio stop reason: eos token found
           mv "artifacts/$exeName" "artifacts/$newName"
           
           # 输出版本信息供后续步骤使用
