@@ -10,9 +10,7 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      # 确保使用 MinGW 工具链的 GCC 而非 MSVC
       RUSTFLAGS: "-C linker=x86_64-w64-mingw32-gcc"
-      # 避免路径问题（Windows 路径分隔符）
       CARGO_TARGET_DIR: ./target
 
     steps:
@@ -21,9 +19,7 @@ jobs:
 
       - name: Setup MinGW environment
         run: |
-          # 添加 MinGW 到 PATH（GitHub Actions Windows 运行器预装了 MSYS2）
           echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          # 验证工具链
           x86_64-w64-mingw32-gcc --version
 
       - name: Install Rust toolchain
@@ -35,9 +31,31 @@ jobs:
       - name: Build for x86_64-pc-windows-gnu
         run: cargo build --target x86_64-pc-windows-gnu --release
 
-      - name: Verify build output
+      # ===== 新增：上传构建产物 =====
+      - name: Package executable
+        id: package
         run: |
-          # 检查生成的 Windows 可执行文件
-          file ./target/x86_64-pc-windows-gnu/release/*.exe
-          # 列出关键文件
-          ls -l ./target/x86_64-pc-windows-gnu/release/*.exe
+          # 创建清晰的目录结构
+          mkdir -p artifacts
+          
+          # 复制可执行文件到 artifacts 目录（保留原始文件名）
+          cp target/x86_64-pc-windows-gnu/release/*.exe artifacts/
+          
+          # 重命名文件为带版本号的格式（可选但推荐）
+          $exeName = (Get-ChildItem artifacts/*.exe).Name
+          $version = (cargo metadata --format-version 1 --no-deps | ConvertFrom-Json).packages[0].version
+          $newName = "myapp-windows-$version.exe"
+          
+          mv "artifacts/$exeName" "artifacts/$newName"
+          
+          # 输出版本信息供后续步骤使用
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+          echo "artifact_name=$newName" >> $env:GITHUB_OUTPUT
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.artifact_name }}  # 使用动态生成的文件名
+          path: artifacts/
+          retention-days: 90  # 保留14天（默认90天）
+          if-no-files-found: error  # 未找到文件时报错
