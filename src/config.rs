@@ -52,12 +52,16 @@ pub struct Config {
         help = "check for updates and replace executable if newer version available"
     )]
     pub update: bool,
+
+    #[arg(long, help = "custom version string to return for /api/version endpoint")]
+    pub version: Option<String>,
 }
 
 #[derive(Debug, Clone)]
 pub struct RuntimeConfig {
     pub max_buffer_size: usize,
     pub enable_chunk_recovery: bool,
+    pub version: Option<String>,
 }
 
 impl Default for RuntimeConfig {
@@ -65,6 +69,7 @@ impl Default for RuntimeConfig {
         Self {
             max_buffer_size: usize::MAX,
             enable_chunk_recovery: true,
+            version: None,
         }
     }
 }
@@ -80,6 +85,10 @@ pub fn get_runtime_config() -> &'static RuntimeConfig {
         static DEFAULT: OnceLock<RuntimeConfig> = OnceLock::new();
         DEFAULT.get_or_init(RuntimeConfig::default)
     })
+}
+
+pub fn get_version() -> Option<String> {
+    get_runtime_config().version.clone()
 }
 
 pub fn validate_config(config: &Config) -> Result<(), String> {

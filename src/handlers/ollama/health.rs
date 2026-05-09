@@ -30,8 +30,9 @@ pub async fn handle_ollama_version() -> Result<warp::reply::Response, ProxyError
     if LogConfig::get().debug_enabled {
         log::debug!("version request");
     }
+    let version = crate::config::get_version().unwrap_or_else(|| OLLAMA_SERVER_VERSION.to_string());
     let response = json!({
-        "version": OLLAMA_SERVER_VERSION
+        "version": version
     });
     if LogConfig::get().debug_enabled {
         log::debug!(

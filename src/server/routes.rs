@@ -201,6 +201,15 @@ pub fn create_routes(
                 .map_err(warp::reject::custom)
         });
 
+    let v1_api_version_route = warp::path!("v1" / "api" / "version")
+        .and(warp::get())
+        .and(with_server_state.clone())
+        .and_then(|_s: Arc<ProxyServer>| async move {
+            ollama::handle_ollama_version()
+                .await
+                .map_err(warp::reject::custom)
+        });
+
     let blob_head_route = warp::path!("api" / "blobs" / String)
         .and(warp::head())
         .and(with_server_state.clone())
@@ -326,6 +335,7 @@ pub fn create_routes(
         .or(ollama_show_route)
         .or(ollama_ps_route)
         .or(ollama_version_route)
+        .or(v1_api_version_route)
         .or(blob_head_route)
         .or(blob_upload_route)
         .or(lmstudio_passthrough_route)

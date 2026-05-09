@@ -33,6 +33,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     config::init_runtime_config(config::RuntimeConfig {
         max_buffer_size: cfg.max_buffer_size,
         enable_chunk_recovery: cfg.enable_chunk_recovery,
+        version: cfg.version.clone(),
     });
 
     let server = server::ProxyServer::new(cfg)?;
