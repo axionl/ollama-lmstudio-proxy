@@ -34,6 +34,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
         max_buffer_size: cfg.max_buffer_size,
         enable_chunk_recovery: cfg.enable_chunk_recovery,
         version: cfg.version.clone(),
+        api_key: cfg.api_key.clone(),
     });
 
     let server = server::ProxyServer::new(cfg)?;

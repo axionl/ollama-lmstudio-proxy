@@ -82,5 +82,12 @@ pub fn build_forward_headers(original: &HeaderMap, force_json: bool) -> HeaderMa
         );
     }
 
+    // If a runtime API key is configured, add it as an Authorization header
+    if let Some(api_key) = crate::config::get_runtime_config().api_key.as_ref() {
+        if let Ok(auth_value) = ReqHeaderValue::from_str(&format!("Bearer {}", api_key)) {
+            filtered.insert(header::AUTHORIZATION, auth_value);
+        }
+    }
+
     filtered
 }

@@ -55,6 +55,9 @@ pub struct Config {
 
     #[arg(long, help = "custom version string to return for /api/version endpoint")]
     pub version: Option<String>,
+
+    #[arg(long, help = "optional API key for authenticating with LM Studio")]
+    pub api_key: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -62,6 +65,7 @@ pub struct RuntimeConfig {
     pub max_buffer_size: usize,
     pub enable_chunk_recovery: bool,
     pub version: Option<String>,
+    pub api_key: Option<String>,
 }
 
 impl Default for RuntimeConfig {
@@ -70,6 +74,7 @@ impl Default for RuntimeConfig {
             max_buffer_size: usize::MAX,
             enable_chunk_recovery: true,
             version: None,
+            api_key: None,
         }
     }
 }

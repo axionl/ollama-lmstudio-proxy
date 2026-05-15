@@ -30,6 +30,11 @@ impl<'a> CancellableRequest<'a> {
 
         let mut request_builder = self.client.request(method, url);
 
+        // If a runtime API key is configured, add it as a Bearer Authorization header
+        if let Some(api_key) = crate::config::get_runtime_config().api_key.as_ref() {
+            request_builder = request_builder.bearer_auth(api_key);
+        }
+
         if let Some(body_content) = body {
             request_builder = request_builder
                 .header("Content-Type", CONTENT_TYPE_JSON)
