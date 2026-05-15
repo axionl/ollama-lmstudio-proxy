@@ -3,7 +3,7 @@ use std::time::Instant;
 use bytes::Bytes;
 use futures_util::StreamExt;
 use http_body_util::StreamBody;
-use reqwest::header::{self};
+use reqwest::header::{self, HeaderValue};
 use serde_json::Value;
 use tokio_util::sync::CancellationToken;
 use warp::http::{self, Response as WarpResponse};
@@ -199,7 +199,16 @@ async fn forward_json_body_request(
     let prepared_body = prepare_request_body(Some(body_json), body_bytes)
         .map_err(|e| ProxyError::bad_request(&format!("Failed to prepare request body: {}", e)))?;
 
-    let forward_headers = build_forward_headers(headers, prepared_body.is_json);
+    let mut forward_headers = build_forward_headers(headers, prepared_body.is_json);
+
+    // Add API key header if configured
+    if let Some(api_key) = crate::config::get_runtime_config().api_key.as_ref() {
+        forward_headers.insert(
+            "Authorization",
+            HeaderValue::from_str(&format!("Bearer {}", api_key))
+                .map_err(|_| ProxyError::internal_server_error("Invalid API key format"))?,
+        );
+    }
 
     let lm_studio_request_start = Instant::now();
     let cancellable_request = CancellableRequest::new(client, cancellation_token.clone());
@@ -231,7 +240,17 @@ async fn forward_raw_body_request(
     body_bytes: &Bytes,
     cancellation_token: CancellationToken,
 ) -> Result<warp::reply::Response, ProxyError> {
-    let forward_headers = build_forward_headers(headers, false);
+    let mut forward_headers = build_forward_headers(headers, false);
+    
+    // Add API key header if configured
+    if let Some(api_key) = crate::config::get_runtime_config().api_key.as_ref() {
+        forward_headers.insert(
+            "Authorization",
+            HeaderValue::from_str(&format!("Bearer {}", api_key))
+                .map_err(|_| ProxyError::internal_server_error("Invalid API key format"))?,
+        );
+    }
+
     let prepared_body = prepare_request_body(None, body_bytes)
         .map_err(|e| ProxyError::bad_request(&format!("Failed to prepare request body: {}", e)))?;
 
