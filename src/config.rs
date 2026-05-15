@@ -65,6 +65,7 @@ pub struct RuntimeConfig {
     pub max_buffer_size: usize,
     pub enable_chunk_recovery: bool,
     pub version: Option<String>,
+    pub api_key: Option<String>,
 }
 
 impl Default for RuntimeConfig {
@@ -73,6 +74,7 @@ impl Default for RuntimeConfig {
             max_buffer_size: usize::MAX,
             enable_chunk_recovery: true,
             version: None,
+            api_key: None,
         }
     }
 }
