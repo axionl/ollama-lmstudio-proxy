@@ -58,6 +58,9 @@ pub struct Config {
 
     #[arg(long, help = "optional API key for authenticating with LM Studio")]
     pub api_key: Option<String>,
+
+    #[arg(long, help = "API key for LM Studio authentication")]
+    pub api_key: Option<String>,
 }
 
 #[derive(Debug, Clone)]
