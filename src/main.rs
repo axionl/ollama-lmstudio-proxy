@@ -35,6 +35,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
         enable_chunk_recovery: cfg.enable_chunk_recovery,
         version: cfg.version.clone(),
         api_key: cfg.api_key.clone(),
+        use_openai: cfg.use_openai,
     });
 
     let server = server::ProxyServer::new(cfg)?;

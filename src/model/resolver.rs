@@ -12,14 +12,14 @@ use crate::model::types::{ModelInfo, NativeModelsResponse};
 use crate::model::utils::clean_model_name;
 
 pub struct ModelResolver {
-    lmstudio_url: String,
+    api_url: String,
     cache: Cache<String, String>,
 }
 
 impl ModelResolver {
-    pub fn new(lmstudio_url: String, cache: Cache<String, String>) -> Self {
+    pub fn new(api_url: String, cache: Cache<String, String>) -> Self {
         Self {
-            lmstudio_url,
+            api_url,
             cache,
         }
     }
@@ -100,7 +100,7 @@ impl ModelResolver {
         client: &reqwest::Client,
         cancellation_token: CancellationToken,
     ) -> Result<Vec<ModelInfo>, ProxyError> {
-        let url = format!("{}{}", self.lmstudio_url, LM_STUDIO_NATIVE_MODELS);
+        let url = format!("{}{}", self.api_url, LM_STUDIO_NATIVE_MODELS);
 
         let request = CancellableRequest::new(client, cancellation_token);
 

@@ -38,7 +38,7 @@ impl ProxyServer {
             .build();
 
         let model_resolver = ModelResolverType::Native(Arc::new(ModelResolver::new(
-            config.lmstudio_url.clone(),
+            config.api_url.clone(),
             cache,
         )));
 
@@ -82,7 +82,7 @@ impl ProxyServer {
         } else {
             log::info!("starting proxy server on {}", addr);
         }
-        log::info!("LM Studio backend: {}", server.config.lmstudio_url);
+        log::info!("Backend API: {}", server.config.api_url);
 
         warp::serve(routes_with_cors).run(addr).await;
 

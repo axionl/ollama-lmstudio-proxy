@@ -10,11 +10,11 @@ pub struct Config {
     pub listen: String,
 
     #[arg(
-        long,
+        long = "api-url",
         default_value = "http://localhost:1234",
-        help = "lm studio backend url"
+        help = "backend API url"
     )]
-    pub lmstudio_url: String,
+    pub api_url: String,
 
     #[arg(
         long,
@@ -58,6 +58,9 @@ pub struct Config {
 
     #[arg(long, help = "optional API key for authenticating with LM Studio")]
     pub api_key: Option<String>,
+
+    #[arg(long, help = "use OpenAI API instead of LM Studio")]
+    pub use_openai: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -66,6 +69,7 @@ pub struct RuntimeConfig {
     pub enable_chunk_recovery: bool,
     pub version: Option<String>,
     pub api_key: Option<String>,
+    pub use_openai: bool,
 }
 
 impl Default for RuntimeConfig {
@@ -75,6 +79,7 @@ impl Default for RuntimeConfig {
             enable_chunk_recovery: true,
             version: None,
             api_key: None,
+            use_openai: false,
         }
     }
 }
@@ -100,14 +105,14 @@ pub fn validate_config(config: &Config) -> Result<(), String> {
     if config.listen.parse::<std::net::SocketAddr>().is_err() {
         return Err(format!("invalid listen address: {}", config.listen));
     }
-    if !config.lmstudio_url.starts_with("http://") && !config.lmstudio_url.starts_with("https://") {
+    if !config.api_url.starts_with("http://") && !config.api_url.starts_with("https://") {
         return Err(format!(
-            "invalid LM Studio URL (must start with http:// or https://): {}",
-            config.lmstudio_url
+            "invalid API URL (must start with http:// or https://): {}",
+            config.api_url
         ));
     }
-    if let Err(e) = url::Url::parse(&config.lmstudio_url) {
-        return Err(format!("invalid LM Studio URL format: {}", e));
+    if let Err(e) = url::Url::parse(&config.api_url) {
+        return Err(format!("invalid API URL format: {}", e));
     }
     Ok(())
 }

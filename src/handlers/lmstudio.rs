@@ -112,7 +112,7 @@ pub async fn handle_lmstudio_passthrough(
 
                 let final_endpoint_url = context.append_query_params(
                     determine_passthrough_endpoint_url(
-                        context.lmstudio_url,
+                        context.api_url,
                         &endpoint,
                         &model_resolver,
                     ),

@@ -8,7 +8,7 @@ use warp::http::HeaderMap;
 
 use crate::constants::MAX_JSON_BODY_SIZE_BYTES;
 use crate::handlers::ollama::{EmbeddingResponseMode, handle_ollama_embeddings};
-use crate::handlers::{RequestContext, lmstudio, ollama};
+use crate::handlers::{RequestContext, lmstudio, ollama, openai};
 use crate::http::json_response;
 use crate::server::ProxyServer;
 
@@ -244,21 +244,39 @@ pub fn create_routes(
                 let context = create_context(&s);
                 let token = CancellationToken::new();
                 let full_path = format!("/v1/{}", tail.as_str());
-                lmstudio::handle_lmstudio_passthrough(
-                    context,
-                    s.model_resolver.clone(),
-                    lmstudio::LmStudioPassthroughRequest {
-                        method,
-                        endpoint: full_path,
-                        body: body_bytes,
-                        headers,
-                        query,
-                    },
-                    token,
-                    s.config.load_timeout_seconds,
-                )
-                .await
-                .map_err(warp::reject::custom)
+                let res = if crate::config::get_runtime_config().use_openai {
+                    openai::handle_openai_passthrough(
+                        context,
+                        s.model_resolver.clone(),
+                        lmstudio::LmStudioPassthroughRequest {
+                            method,
+                            endpoint: full_path,
+                            body: body_bytes,
+                            headers,
+                            query,
+                        },
+                        token,
+                        s.config.load_timeout_seconds,
+                    )
+                    .await
+                } else {
+                    lmstudio::handle_lmstudio_passthrough(
+                        context,
+                        s.model_resolver.clone(),
+                        lmstudio::LmStudioPassthroughRequest {
+                            method,
+                            endpoint: full_path,
+                            body: body_bytes,
+                            headers,
+                            query,
+                        },
+                        token,
+                        s.config.load_timeout_seconds,
+                    )
+                    .await
+                };
+
+                res.map_err(warp::reject::custom)
             },
         );
 
@@ -294,21 +312,39 @@ pub fn create_routes(
                 } else {
                     format!("/api/{}/{}", version, tail_str)
                 };
-                lmstudio::handle_lmstudio_passthrough(
-                    context,
-                    s.model_resolver.clone(),
-                    lmstudio::LmStudioPassthroughRequest {
-                        method,
-                        endpoint: full_path,
-                        body: body_bytes,
-                        headers,
-                        query,
-                    },
-                    token,
-                    s.config.load_timeout_seconds,
-                )
-                .await
-                .map_err(warp::reject::custom)
+                let res = if crate::config::get_runtime_config().use_openai {
+                    openai::handle_openai_passthrough(
+                        context,
+                        s.model_resolver.clone(),
+                        lmstudio::LmStudioPassthroughRequest {
+                            method,
+                            endpoint: full_path,
+                            body: body_bytes,
+                            headers,
+                            query,
+                        },
+                        token,
+                        s.config.load_timeout_seconds,
+                    )
+                    .await
+                } else {
+                    lmstudio::handle_lmstudio_passthrough(
+                        context,
+                        s.model_resolver.clone(),
+                        lmstudio::LmStudioPassthroughRequest {
+                            method,
+                            endpoint: full_path,
+                            body: body_bytes,
+                            headers,
+                            query,
+                        },
+                        token,
+                        s.config.load_timeout_seconds,
+                    )
+                    .await
+                };
+
+                res.map_err(warp::reject::custom)
             },
         );
 
@@ -335,7 +371,7 @@ pub fn create_routes(
 fn create_context(s: &Arc<ProxyServer>) -> RequestContext<'_> {
     RequestContext {
         client: &s.client,
-        lmstudio_url: &s.config.lmstudio_url,
+        api_url: &s.config.api_url,
         virtual_models: s.virtual_models.clone(),
         blob_store: s.blob_store.clone(),
     }

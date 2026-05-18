@@ -81,7 +81,7 @@ pub async fn handle_health_check(
 
             let response = json!({
                 "status": if is_healthy { "healthy" } else { "unhealthy" },
-                "lmstudio_url": context.lmstudio_url,
+                "api_url": context.api_url,
                 "http_status": status.as_u16(),
                 "models_known_to_lmstudio": model_count,
                 "response_time_ms": start_time.elapsed().as_millis(),
@@ -105,7 +105,7 @@ pub async fn handle_health_check(
             );
             let response = json!({
                 "status": "unreachable",
-                "lmstudio_url": context.lmstudio_url,
+                "api_url": context.api_url,
                 "error_message": e.message,
                 "error_details": ERROR_LM_STUDIO_UNAVAILABLE,
                 "response_time_ms": start_time.elapsed().as_millis(),

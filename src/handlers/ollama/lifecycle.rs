@@ -42,7 +42,7 @@ pub async fn handle_ollama_pull(
     log_request("POST", "/api/pull", Some(requested_model));
 
     let client = context.client.clone();
-    let base_url = context.lmstudio_url.to_string();
+    let base_url = context.api_url.to_string();
 
     let resolved_model_context =
         if source_override.is_none() && !looks_like_remote_identifier(requested_model) {

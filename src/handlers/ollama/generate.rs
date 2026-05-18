@@ -211,7 +211,7 @@ pub async fn handle_ollama_generate(
     };
     super::keep_alive::spawn_model_unload_if_needed(
         context.client.clone(),
-        context.lmstudio_url.to_string(),
+                context.api_url.to_string(),
         model_resolver.clone(),
         ollama_model_name.to_string(),
         keep_alive_seconds,
